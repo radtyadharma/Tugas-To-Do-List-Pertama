@@ -1,12 +1,3 @@
-/* PALET WARNA BARU (FINAL): 
-   - Background Utama: #3a322c (Deep Taupe/Coklat Gelap Soft)
-   - Background Kontainer: #4c443e (Moka Soft)
-   - Teks Utama: #ffffff (Putih Bersih)
-   - Aksen/Highlight: #f0e9d6 (Putih Susu/Krem Sangat Terang)
-   - Border/Garis: #59504a (Coklat Medium)
-*/
-
-/* RESET DAN DASAR */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #3a322c; 
@@ -18,7 +9,6 @@ body {
     margin: 0;
 }
 
-/* KONTAINER UTAMA */
 .container {
     background-color: #4c443e; 
     padding: 30px;
@@ -28,9 +18,8 @@ body {
     max-width: 500px;
 }
 
-/* JUDUL (RATA TENGAH) */
 h1 {
-    color: #f0e9d6; /* <<< BARU: Aksen Putih Susu */
+    color: #f0e9d6;
     font-weight: 600;
     font-size: 2em;
     margin-bottom: 25px;
@@ -39,7 +28,6 @@ h1 {
     text-align: center;
 }
 
-/* INPUT DAN TOMBOL TAMBAH */
 .input-container {
     display: flex;
     gap: 10px;
@@ -67,17 +55,16 @@ h1 {
 
 #taskInput:focus, #dateInput:focus {
     outline: none;
-    border-color: #f0e9d6; /* <<< BARU: Fokus Putih Susu */
+    border-color: #f0e9d6;
     box-shadow: 0 0 8px rgba(240, 233, 214, 0.5); 
 }
 
-/* TOMBOL */
 button {
     padding: 10px 15px;
     border: none;
     border-radius: 6px;
-    background-color: #f0e9d6; /* <<< BARU: Tombol Background Putih Susu */
-    color: #3a322c; /* Teks tombol Deep Taupe (Kontras) */
+    background-color: #f0e9d6; 
+    color: #3a322c; 
     cursor: pointer;
     transition: background-color 0.3s, transform 0.1s;
     font-weight: bold;
@@ -86,18 +73,16 @@ button {
 }
 
 button:hover {
-    background-color: #d8d0c0; /* Warna hover sedikit lebih gelap */
+    background-color: #d8d0c0; 
     transform: translateY(-1px);
 }
 
-/* DAFTAR TUGAS (UL) */
 #taskList {
     list-style: none;
     padding: 0;
     margin-top: 0;
 }
 
-/* ITEM TUGAS (LI) */
 .task-item {
     display: flex;
     align-items: center;
@@ -110,7 +95,6 @@ button:hover {
     border-bottom: none;
 }
 
-/* CHECKBOX (MENU SELESAI) */
 .task-item input[type="checkbox"] {
     appearance: none;
     width: 20px;
@@ -123,10 +107,9 @@ button:hover {
     flex-shrink: 0;
 }
 
-/* Efek centang */
 .task-item input[type="checkbox"]:checked {
     border-color: #f0e9d6;
-    background-color: #f0e9d6; /* Diisi Putih Susu */
+    background-color: #f0e9d6; 
 }
 .task-item input[type="checkbox"]:checked::after {
     content: '';
@@ -135,11 +118,10 @@ button:hover {
     left: 3px;
     width: 10px;
     height: 10px;
-    background-color: #3a322c; /* Titik Deep Taupe (Kontras) */
+    background-color: #3a322c; 
     border-radius: 50%;
 }
 
-/* Teks Tugas */
 .task-item label {
     flex-grow: 1;
     color: #ffffff;
@@ -149,14 +131,12 @@ button:hover {
     flex-direction: column;
 }
 
-/* TAMPILAN TANGGAL */
 .date-info {
     font-size: 0.75em;
     color: #c0c0c0;
     font-weight: 300;
 }
 
-/* Teks Tugas Selesai */
 .completed .task-text {
     text-decoration: line-through; 
     color: #888888;
@@ -166,7 +146,6 @@ button:hover {
     color: #707070;
 }
 
-/* TOMBOL AKSI (EDIT & HAPUS) */
 .actions {
     display: flex;
     gap: 5px;
@@ -186,11 +165,10 @@ button:hover {
 }
 
 .actions button:hover {
-    color: #f0e9d6; /* <<< BARU: Aksen Putih Susu saat hover */
+    color: #f0e9d6; 
     background-color: #5c544d;
 }
 
-/* MODE EDIT */
 .editing .task-text, .editing .date-info {
     display: none;
 }
@@ -201,7 +179,7 @@ button:hover {
     flex-grow: 1;
     margin-right: 10px;
     padding: 5px;
-    border: 1px solid #f0e9d6; /* <<< BARU: Border Putih Susu */
+    border: 1px solid #f0e9d6; 
     background-color: #5c544d;
     color: #ffffff;
     border-radius: 4px;
@@ -210,7 +188,6 @@ button:hover {
     display: none;
 }
 
-/* INSTRUKSI PLACEHOLDER */
 .instruction {
     font-size: 0.9em;
     color: #a0a0a0;
