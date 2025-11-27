@@ -1,7 +1,7 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #3a322c; 
-    color: #ffffff; 
+    background-color: #86945e; 
+    color: #49592a; 
     display: flex;
     justify-content: center;
     align-items: center;
@@ -10,21 +10,22 @@ body {
 }
 
 .container {
-    background-color: #4c443e; 
+    background-color: #fcfcfc; 
     padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
     width: 100%;
     max-width: 500px;
+    transition: all 0.5s ease-in-out; 
 }
 
 h1 {
-    color: #f0e9d6;
+    color: #49592a; 
     font-weight: 600;
     font-size: 2em;
     margin-bottom: 25px;
     padding-bottom: 10px;
-    border-bottom: 2px solid #59504a; 
+    border-bottom: 2px solid #576b33; 
     text-align: center;
 }
 
@@ -37,12 +38,12 @@ h1 {
 
 #taskInput, #dateInput {
     padding: 12px;
-    border: 1px solid #59504a; 
+    border: 1px solid #576b33; 
     border-radius: 6px;
-    background-color: #5c544d; 
-    color: #ffffff; 
+    background-color: #ffffff; 
+    color: #49592a; 
     font-size: 1em;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    transition: border-color 0.4s, box-shadow 0.4s;
 }
 
 #taskInput {
@@ -55,26 +56,27 @@ h1 {
 
 #taskInput:focus, #dateInput:focus {
     outline: none;
-    border-color: #f0e9d6;
-    box-shadow: 0 0 8px rgba(240, 233, 214, 0.5); 
+    border-color: #49592a; 
+    box-shadow: 0 0 8px rgba(73, 89, 42, 0.3); 
 }
 
 button {
     padding: 10px 15px;
     border: none;
     border-radius: 6px;
-    background-color: #f0e9d6; 
-    color: #3a322c; 
+    background-color: #49592a; 
+    color: #fcfcfc; 
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.1s;
+    transition: background-color 0.3s, transform 0.2s;
     font-weight: bold;
     min-width: 100px;
     order: 3;
 }
 
 button:hover {
-    background-color: #d8d0c0; 
-    transform: translateY(-1px);
+    background-color: #576b33; 
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 #taskList {
@@ -84,32 +86,80 @@ button:hover {
 }
 
 .task-item {
+    position: relative; 
     display: flex;
     align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #59504a; 
-    transition: opacity 0.3s;
+    padding: 12px;
+    max-height: 100px; 
+    margin-bottom: 10px;
+    border-radius: 6px;
+    background-color: #c3d4a5; 
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-bottom: none; 
+    transition: all 0.4s ease-in-out; 
 }
 
 .task-item:last-child {
     border-bottom: none;
+    margin-bottom: 0;
+}
+
+.fade-in-start {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    transform: translateY(-15px);
+}
+
+.fade-out {
+    opacity: 0;
+    transform: translateX(100px); 
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    overflow: hidden;
+}
+
+.expired {
+    background-color: #FF7043; 
+    box-shadow: 0 0 8px rgba(255, 112, 67, 0.6);
+}
+.expired .date-info {
+    color: #FFFFFF; 
+    font-weight: bold;
+}
+.expired::before {
+    content: "⚠️"; 
+    position: absolute;
+    left: -10px; 
+    top: -10px;
+    font-size: 1.2em;
+    z-index: 10;
+    background-color: #fcfcfc; 
+    padding: 3px;
+    border-radius: 50%;
 }
 
 .task-item input[type="checkbox"] {
     appearance: none;
     width: 20px;
     height: 20px;
-    border: 2px solid #a0a0a0;
+    border: 2px solid #49592a; 
     border-radius: 50%; 
     cursor: pointer;
     margin-right: 15px;
     position: relative;
     flex-shrink: 0;
+    background-color: transparent;
+    transition: border-color 0.3s, background-color 0.3s;
 }
 
 .task-item input[type="checkbox"]:checked {
-    border-color: #f0e9d6;
-    background-color: #f0e9d6; 
+    border-color: #49592a; 
+    background-color: #49592a; 
 }
 .task-item input[type="checkbox"]:checked::after {
     content: '';
@@ -118,13 +168,14 @@ button:hover {
     left: 3px;
     width: 10px;
     height: 10px;
-    background-color: #3a322c; 
+    background-color: #fcfcfc; 
     border-radius: 50%;
+    transition: background-color 0.3s;
 }
 
 .task-item label {
     flex-grow: 1;
-    color: #ffffff;
+    color: #49592a; 
     cursor: pointer;
     line-height: 1.4;
     display: flex;
@@ -133,17 +184,22 @@ button:hover {
 
 .date-info {
     font-size: 0.75em;
-    color: #c0c0c0;
+    color: #576b33; 
     font-weight: 300;
+}
+
+.completed {
+    background-color: #576b33; 
 }
 
 .completed .task-text {
     text-decoration: line-through; 
-    color: #888888;
+    color: #cdd0c0; 
     font-style: italic;
+    transition: color 0.3s;
 }
 .completed .date-info {
-    color: #707070;
+    color: #cdd0c0;
 }
 
 .actions {
@@ -157,7 +213,7 @@ button:hover {
     background: none;
     padding: 8px;
     font-size: 1.1em;
-    color: #a0a0a0; 
+    color: #49592a; 
     min-width: unset;
     border-radius: 4px;
     transform: none;
@@ -165,8 +221,8 @@ button:hover {
 }
 
 .actions button:hover {
-    color: #f0e9d6; 
-    background-color: #5c544d;
+    color: #cdd0c0; 
+    background-color: #49592a; 
 }
 
 .editing .task-text, .editing .date-info {
@@ -179,10 +235,11 @@ button:hover {
     flex-grow: 1;
     margin-right: 10px;
     padding: 5px;
-    border: 1px solid #f0e9d6; 
-    background-color: #5c544d;
-    color: #ffffff;
+    border: 1px solid #49592a; 
+    background-color: #fcfcfc; 
+    color: #49592a; 
     border-radius: 4px;
+    transition: all 0.3s;
 }
 .edit-input {
     display: none;
@@ -190,11 +247,11 @@ button:hover {
 
 .instruction {
     font-size: 0.9em;
-    color: #a0a0a0;
+    color: #49592a; 
     margin-top: 10px;
 }
 .instruction input[type="checkbox"] {
-    border-color: #59504a;
+    border-color: #576b33; 
 }
 .instruction .actions {
     display: none;

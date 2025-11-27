@@ -1,4 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("addTaskBtn").addEventListener("click", addTask);
+  document.getElementById("taskInput").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      addTask();
+    }
+  });
+
   loadTasks();
 });
 
@@ -21,6 +28,25 @@ function formatDate(isoString) {
   }
 }
 
+function checkExpiry() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  document.querySelectorAll(".task-item:not(.instruction)").forEach((item) => {
+    const dateString = item.getAttribute("data-date");
+    item.classList.remove("expired");
+
+    if (dateString) {
+      const dueDate = new Date(dateString);
+      dueDate.setHours(0, 0, 0, 0);
+
+      if (!item.classList.contains("completed") && dueDate < today) {
+        item.classList.add("expired");
+      }
+    }
+  });
+}
+
 function isTaskDuplicate(newTaskText) {
   const taskList = document.getElementById("taskList");
   let isDuplicate = false;
@@ -38,11 +64,20 @@ function isTaskDuplicate(newTaskText) {
   return isDuplicate;
 }
 
-function createTaskElement(text, isCompleted = false, dateString = "") {
+function createTaskElement(
+  text,
+  isCompleted = false,
+  dateString = "",
+  isNew = false
+) {
   const listItem = document.createElement("li");
   listItem.classList.add("task-item");
   if (isCompleted) {
     listItem.classList.add("completed");
+  }
+
+  if (isNew) {
+    listItem.classList.add("fade-in-start");
   }
 
   const taskId = `task-${Date.now()}-${Math.random()
@@ -53,21 +88,26 @@ function createTaskElement(text, isCompleted = false, dateString = "") {
   listItem.setAttribute("data-date", dateString);
 
   listItem.innerHTML = `
-    <input type="checkbox" id="${taskId}" ${
+        <input type="checkbox" id="${taskId}" ${
     isCompleted ? "checked" : ""
   } onclick="toggleComplete(this)">
-    <label for="${taskId}">
-      <span class="task-text">${text}</span>
-      ${formattedDate ? `<span class="date-info">${formattedDate}</span>` : ""}
-    </label>
-    
-    <input type="text" class="edit-input" value="${text}" style="display: none;">
+        <label for="${taskId}">
+            <span class="task-text">${text}</span>
+            ${
+              formattedDate
+                ? `<span class="date-info">${formattedDate}</span>`
+                : ""
+            }
+        </label>
+        
+        <input type="text" class="edit-input edit-text-input" value="${text}" style="display: none;">
+        <input type="date" class="edit-input edit-date-input" value="${dateString}" style="display: none;">
 
-    <div class="actions">
-      <button class="edit-btn" onclick="editTask(this)" title="Edit Tugas"><i class="fas fa-edit"></i></button>
-      <button class="delete-btn" onclick="deleteTask(this)" title="Hapus Tugas"><i class="fas fa-trash"></i></button>
-    </div>
-  `;
+        <div class="actions">
+            <button class="edit-btn" onclick="editTask(this)" title="Edit Tugas"><i class="fas fa-edit"></i></button>
+            <button class="delete-btn" onclick="deleteTask(this)" title="Hapus Tugas"><i class="fas fa-trash"></i></button>
+        </div>
+    `;
 
   return listItem;
 }
@@ -85,6 +125,11 @@ function addTask() {
     return;
   }
 
+  if (taskDate === "") {
+    alert("⚠️ Anda harus menyetel tanggal jatuh tempo untuk tugas ini!");
+    return;
+  }
+
   if (isTaskDuplicate(taskText)) {
     alert("❌ Tugas ini sudah ada di daftar Anda!");
     taskInput.value = "";
@@ -96,8 +141,12 @@ function addTask() {
     instructionItem.remove();
   }
 
-  const newTask = createTaskElement(taskText, false, taskDate);
+  const newTask = createTaskElement(taskText, false, taskDate, true);
   taskList.prepend(newTask);
+
+  setTimeout(() => {
+    newTask.classList.remove("fade-in-start");
+  }, 10);
 
   saveTasks();
   taskInput.value = "";
@@ -113,10 +162,14 @@ function toggleComplete(checkbox) {
 function editTask(editButton) {
   const listItem = editButton.closest(".task-item");
   const taskTextSpan = listItem.querySelector(".task-text");
-  const editInput = listItem.querySelector(".edit-input");
+  const dateInfoSpan = listItem.querySelector(".date-info");
+
+  const editText = listItem.querySelector(".edit-text-input");
+  const editDate = listItem.querySelector(".edit-date-input");
 
   if (listItem.classList.contains("editing")) {
-    const newText = editInput.value.trim();
+    const newText = editText.value.trim();
+    const newDate = editDate.value;
     const originalText = taskTextSpan.textContent.trim();
 
     if (
@@ -124,16 +177,39 @@ function editTask(editButton) {
       isTaskDuplicate(newText)
     ) {
       alert("❌ Tugas baru ini sudah ada di daftar Anda!");
-      editInput.focus();
+      editText.focus();
       return;
     }
 
     if (newText !== "") {
+      if (newDate === "") {
+        alert("⚠️ Tanggal tidak boleh kosong saat menyimpan tugas!");
+        editDate.focus();
+        return;
+      }
+
       taskTextSpan.textContent = newText;
+
+      if (dateInfoSpan) {
+        if (!newDate) {
+          dateInfoSpan.remove();
+        } else {
+          dateInfoSpan.textContent = formatDate(newDate);
+        }
+      } else if (newDate) {
+        const newDateSpan = document.createElement("span");
+        newDateSpan.classList.add("date-info");
+        newDateSpan.textContent = formatDate(newDate);
+        listItem.querySelector("label").appendChild(newDateSpan);
+      }
+
+      listItem.setAttribute("data-date", newDate);
+
       listItem.classList.remove("editing");
       editButton.innerHTML = '<i class="fas fa-edit"></i>';
       editButton.title = "Edit Tugas";
-      editInput.style.display = "none";
+      editText.style.display = "none";
+      editDate.style.display = "none";
 
       saveTasks();
     } else {
@@ -141,19 +217,29 @@ function editTask(editButton) {
     }
   } else {
     listItem.classList.add("editing");
-    editInput.value = taskTextSpan.textContent;
-    editInput.style.display = "inline-block";
+
+    editText.value = taskTextSpan.textContent;
+    editText.style.display = "inline-block";
+
+    editDate.value = listItem.getAttribute("data-date") || "";
+    editDate.style.display = "inline-block";
+
     editButton.innerHTML = '<i class="fas fa-save"></i>';
     editButton.title = "Simpan Tugas";
-    editInput.focus();
+
+    editText.focus();
   }
 }
 
 function deleteTask(deleteButton) {
   const listItem = deleteButton.closest(".task-item");
   if (confirm("Apakah Anda yakin ingin menghapus tugas ini?")) {
-    listItem.remove();
-    saveTasks();
+    listItem.classList.add("fade-out");
+
+    setTimeout(() => {
+      listItem.remove();
+      saveTasks();
+    }, 300);
   }
 }
 
@@ -174,6 +260,7 @@ function saveTasks() {
   });
 
   localStorage.setItem("todoTasks", JSON.stringify(tasks));
+  checkExpiry();
 }
 
 function loadTasks() {
@@ -198,9 +285,10 @@ function loadTasks() {
     const instructionItem = document.createElement("li");
     instructionItem.classList.add("task-item", "instruction");
     instructionItem.innerHTML = `
-      <input type="checkbox" disabled>
-      <label>Try typing 'Bayar tagihan listrik'</label>
-    `;
+            <input type="checkbox" disabled>
+            <label>Coba ketik 'Bayar tagihan listrik'</label>
+        `;
     taskList.appendChild(instructionItem);
   }
+  checkExpiry();
 }
