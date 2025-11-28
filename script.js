@@ -6,8 +6,39 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  document.querySelectorAll(".filter-btn").forEach((button) => {
+    button.addEventListener("click", function () {
+      document
+        .querySelectorAll(".filter-btn")
+        .forEach((btn) => btn.classList.remove("active"));
+      this.classList.add("active");
+      filterTasks();
+    });
+  });
+
+  loadTheme();
+  document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+
   loadTasks();
+  updateCounter();
 });
+
+function toggleTheme() {
+  const body = document.body;
+  const isDarkMode = body.classList.toggle("dark-mode");
+  localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+}
+
+function loadTheme() {
+  const theme = localStorage.getItem("theme");
+  const body = document.body;
+
+  if (theme === "dark") {
+    body.classList.add("dark-mode");
+  } else {
+    body.classList.remove("dark-mode");
+  }
+}
 
 function formatDate(isoString) {
   if (!isoString) return "";
@@ -28,20 +59,62 @@ function formatDate(isoString) {
   }
 }
 
-function checkExpiry() {
+function checkExpiry(item) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  document.querySelectorAll(".task-item:not(.instruction)").forEach((item) => {
-    const dateString = item.getAttribute("data-date");
-    item.classList.remove("expired");
+  const dateString = item.getAttribute("data-date");
+  item.classList.remove("expired");
 
-    if (dateString) {
-      const dueDate = new Date(dateString);
-      dueDate.setHours(0, 0, 0, 0);
+  if (dateString) {
+    const dueDate = new Date(dateString);
+    dueDate.setHours(0, 0, 0, 0);
 
-      if (!item.classList.contains("completed") && dueDate < today) {
-        item.classList.add("expired");
+    if (!item.classList.contains("completed") && dueDate < today) {
+      item.classList.add("expired");
+    }
+  }
+  return item.classList.contains("expired");
+}
+
+function updateCounter() {
+  const taskList = document.getElementById("taskList");
+  const totalCount = taskList.querySelectorAll(
+    ".task-item:not(.instruction)"
+  ).length;
+
+  let pendingCount = 0;
+  taskList.querySelectorAll(".task-item:not(.instruction)").forEach((item) => {
+    if (!item.classList.contains("completed")) {
+      pendingCount++;
+    }
+  });
+
+  document.getElementById("totalCount").textContent = totalCount;
+  document.getElementById("pendingCount").textContent = pendingCount;
+}
+
+function filterTasks() {
+  const activeButton = document.querySelector(".filter-btn.active");
+  const status = activeButton
+    ? activeButton.getAttribute("data-filter")
+    : "all";
+
+  const taskList = document.getElementById("taskList");
+
+  taskList.querySelectorAll(".task-item:not(.instruction)").forEach((item) => {
+    const isCompleted = item.classList.contains("completed");
+    const isExpired = checkExpiry(item);
+
+    item.classList.remove("hidden");
+
+    if (status === "pending" && isCompleted) {
+      item.classList.add("hidden");
+    } else if (status === "completed" && !isCompleted) {
+      item.classList.add("hidden");
+    } else if (status === "expired") {
+      if (!isExpired || isCompleted) {
+        item.classList.add("hidden");
       }
     }
   });
@@ -83,7 +156,9 @@ function createTaskElement(
   const taskId = `task-${Date.now()}-${Math.random()
     .toString(36)
     .substring(2, 9)}`;
-  const formattedDate = dateString ? formatDate(dateString) : "";
+  const formattedDateDisplay = dateString
+    ? formatDate(dateString)
+    : "Tidak ada tenggat waktu";
 
   listItem.setAttribute("data-date", dateString);
 
@@ -93,11 +168,7 @@ function createTaskElement(
   } onclick="toggleComplete(this)">
         <label for="${taskId}">
             <span class="task-text">${text}</span>
-            ${
-              formattedDate
-                ? `<span class="date-info">${formattedDate}</span>`
-                : ""
-            }
+            <span class="date-info">${formattedDateDisplay}</span>
         </label>
         
         <input type="text" class="edit-input edit-text-input" value="${text}" style="display: none;">
@@ -108,6 +179,10 @@ function createTaskElement(
             <button class="delete-btn" onclick="deleteTask(this)" title="Hapus Tugas"><i class="fas fa-trash"></i></button>
         </div>
     `;
+
+  if (!isNew) {
+    checkExpiry(listItem);
+  }
 
   return listItem;
 }
@@ -122,11 +197,6 @@ function addTask() {
 
   if (taskText === "") {
     alert("Tugas tidak boleh kosong!");
-    return;
-  }
-
-  if (taskDate === "") {
-    alert("⚠️ Anda harus menyetel tanggal jatuh tempo untuk tugas ini!");
     return;
   }
 
@@ -146,26 +216,31 @@ function addTask() {
 
   setTimeout(() => {
     newTask.classList.remove("fade-in-start");
+    checkExpiry(newTask);
   }, 10);
 
   saveTasks();
   taskInput.value = "";
   dateInput.value = "";
+  updateCounter();
+  filterTasks();
 }
 
 function toggleComplete(checkbox) {
   const listItem = checkbox.closest(".task-item");
   listItem.classList.toggle("completed");
+  checkExpiry(listItem);
   saveTasks();
+  updateCounter();
+  filterTasks();
 }
 
 function editTask(editButton) {
   const listItem = editButton.closest(".task-item");
   const taskTextSpan = listItem.querySelector(".task-text");
-  const dateInfoSpan = listItem.querySelector(".date-info");
 
-  const editText = listItem.querySelector(".edit-text-input");
-  const editDate = listItem.querySelector(".edit-date-input");
+  const editText = listItem.querySelector(".edit-input.edit-text-input");
+  const editDate = listItem.querySelector(".edit-input.edit-date-input");
 
   if (listItem.classList.contains("editing")) {
     const newText = editText.value.trim();
@@ -182,25 +257,15 @@ function editTask(editButton) {
     }
 
     if (newText !== "") {
-      if (newDate === "") {
-        alert("⚠️ Tanggal tidak boleh kosong saat menyimpan tugas!");
-        editDate.focus();
-        return;
-      }
-
       taskTextSpan.textContent = newText;
 
-      if (dateInfoSpan) {
-        if (!newDate) {
-          dateInfoSpan.remove();
-        } else {
-          dateInfoSpan.textContent = formatDate(newDate);
-        }
-      } else if (newDate) {
-        const newDateSpan = document.createElement("span");
-        newDateSpan.classList.add("date-info");
-        newDateSpan.textContent = formatDate(newDate);
-        listItem.querySelector("label").appendChild(newDateSpan);
+      const dateDisplay = newDate
+        ? formatDate(newDate)
+        : "Tidak ada tenggat waktu";
+
+      let dateSpan = listItem.querySelector(".date-info");
+      if (dateSpan) {
+        dateSpan.textContent = dateDisplay;
       }
 
       listItem.setAttribute("data-date", newDate);
@@ -211,7 +276,9 @@ function editTask(editButton) {
       editText.style.display = "none";
       editDate.style.display = "none";
 
+      checkExpiry(listItem);
       saveTasks();
+      filterTasks();
     } else {
       alert("Tugas tidak boleh kosong!");
     }
@@ -239,6 +306,8 @@ function deleteTask(deleteButton) {
     setTimeout(() => {
       listItem.remove();
       saveTasks();
+      updateCounter();
+      filterTasks();
     }, 300);
   }
 }
@@ -260,7 +329,6 @@ function saveTasks() {
   });
 
   localStorage.setItem("todoTasks", JSON.stringify(tasks));
-  checkExpiry();
 }
 
 function loadTasks() {
@@ -290,5 +358,7 @@ function loadTasks() {
         `;
     taskList.appendChild(instructionItem);
   }
-  checkExpiry();
+
+  updateCounter();
+  filterTasks();
 }

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ToDoList Interaktif</title>
+    <title>ToDoList Interaktif - Green Zaitun</title>
     <link rel="stylesheet" href="style.css" />
     <link
       rel="stylesheet"
@@ -12,7 +12,13 @@
   </head>
   <body>
     <div class="container">
-      <h1>To Do List</h1>
+      
+      <header>
+        <h1><strong>TO-DO LIST</strong></h1>
+        <button id="themeToggle" title="Ganti Tema Gelap/Terang">
+          <i class="fas fa-moon"></i><i class="fas fa-sun"></i>
+        </button>
+      </header>
 
       <div class="input-container">
         <input
@@ -21,7 +27,37 @@
           placeholder="Masukkan tugas baru..."
         />
         <input type="date" id="dateInput" />
-        <button onclick="addTask()">Tambah Tugas</button>
+        <button id="addTaskBtn">
+          <i class="fas fa-plus"></i> Tambah Tugas
+        </button>
+      </div>
+
+      <div class="controls-container">
+        <div class="task-counter">
+          <span id="pendingCount">0</span> Tugas Belum Selesai (<span
+            id="totalCount"
+            >0</span
+          >
+          Total)
+        </div>
+
+        <div class="filter-sort-container">
+          <label>Filter:</label>
+          <div class="filter-buttons" id="filterButtons">
+            <button class="filter-btn active" data-filter="all">
+              <i class="fas fa-list"></i> Semua
+            </button>
+            <button class="filter-btn" data-filter="pending">
+              <i class="fas fa-clock"></i> Belum
+            </button>
+            <button class="filter-btn" data-filter="completed">
+              <i class="fas fa-check-circle"></i> Selesai
+            </button>
+            <button class="filter-btn" data-filter="expired">
+              <i class="fas fa-exclamation-triangle"></i> Expired
+            </button>
+          </div>
+        </div>
       </div>
 
       <ul id="taskList"></ul>
