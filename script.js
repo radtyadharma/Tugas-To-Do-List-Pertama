@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  document.getElementById("taskInput").addEventListener("input", clearError);
+
   document.querySelectorAll(".filter-btn").forEach((button) => {
     button.addEventListener("click", function () {
       document
@@ -22,6 +24,18 @@ document.addEventListener("DOMContentLoaded", () => {
   loadTasks();
   updateCounter();
 });
+
+function showError(message) {
+  const errorDiv = document.getElementById("validationError");
+  errorDiv.textContent = message;
+  errorDiv.style.display = "block";
+}
+
+function clearError() {
+  const errorDiv = document.getElementById("validationError");
+  errorDiv.textContent = "";
+  errorDiv.style.display = "none";
+}
 
 function toggleTheme() {
   const body = document.body;
@@ -195,14 +209,17 @@ function addTask() {
   const taskText = taskInput.value.trim();
   const taskDate = dateInput.value;
 
+  clearError();
+
   if (taskText === "") {
-    alert("Tugas tidak boleh kosong!");
+    showError("⚠️ TUGAS WAJIB DI ISI !");
+    taskInput.focus();
     return;
   }
 
   if (isTaskDuplicate(taskText)) {
-    alert("❌ Tugas ini sudah ada di daftar Anda!");
-    taskInput.value = "";
+    showError("❌ TUGAS INI SUDAH ADA DI DAFTAR ANDA !");
+    taskInput.focus();
     return;
   }
 
@@ -247,41 +264,45 @@ function editTask(editButton) {
     const newDate = editDate.value;
     const originalText = taskTextSpan.textContent.trim();
 
-    if (
-      newText.toLowerCase() !== originalText.toLowerCase() &&
-      isTaskDuplicate(newText)
-    ) {
-      alert("❌ Tugas baru ini sudah ada di daftar Anda!");
+    clearError();
+
+    if (newText === "") {
+      showError("⚠️ TUGAS WAJIB DI ISI !");
       editText.focus();
       return;
     }
 
-    if (newText !== "") {
-      taskTextSpan.textContent = newText;
-
-      const dateDisplay = newDate
-        ? formatDate(newDate)
-        : "Tidak ada tenggat waktu";
-
-      let dateSpan = listItem.querySelector(".date-info");
-      if (dateSpan) {
-        dateSpan.textContent = dateDisplay;
-      }
-
-      listItem.setAttribute("data-date", newDate);
-
-      listItem.classList.remove("editing");
-      editButton.innerHTML = '<i class="fas fa-edit"></i>';
-      editButton.title = "Edit Tugas";
-      editText.style.display = "none";
-      editDate.style.display = "none";
-
-      checkExpiry(listItem);
-      saveTasks();
-      filterTasks();
-    } else {
-      alert("Tugas tidak boleh kosong!");
+    if (
+      newText.toLowerCase() !== originalText.toLowerCase() &&
+      isTaskDuplicate(newText)
+    ) {
+      showError("❌ TUGAS BARU INI SUDAH ADA DI DAFTAR ANDA !");
+      editText.focus();
+      return;
     }
+
+    taskTextSpan.textContent = newText;
+
+    const dateDisplay = newDate
+      ? formatDate(newDate)
+      : "Tidak ada tenggat waktu";
+
+    let dateSpan = listItem.querySelector(".date-info");
+    if (dateSpan) {
+      dateSpan.textContent = dateDisplay;
+    }
+
+    listItem.setAttribute("data-date", newDate);
+
+    listItem.classList.remove("editing");
+    editButton.innerHTML = '<i class="fas fa-edit"></i>';
+    editButton.title = "Edit Tugas";
+    editText.style.display = "none";
+    editDate.style.display = "none";
+
+    checkExpiry(listItem);
+    saveTasks();
+    filterTasks();
   } else {
     listItem.classList.add("editing");
 
@@ -290,6 +311,9 @@ function editTask(editButton) {
 
     editDate.value = listItem.getAttribute("data-date") || "";
     editDate.style.display = "inline-block";
+
+    editText.setAttribute("required", "required");
+    editDate.removeAttribute("required");
 
     editButton.innerHTML = '<i class="fas fa-save"></i>';
     editButton.title = "Simpan Tugas";
@@ -300,7 +324,7 @@ function editTask(editButton) {
 
 function deleteTask(deleteButton) {
   const listItem = deleteButton.closest(".task-item");
-  if (confirm("Apakah Anda yakin ingin menghapus tugas ini?")) {
+  if (confirm("❓ Apakah anda yakin menghapus tugas ini?")) {
     listItem.classList.add("fade-out");
 
     setTimeout(() => {

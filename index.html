@@ -12,7 +12,6 @@
   </head>
   <body>
     <div class="container">
-      
       <header>
         <h1><strong>TO-DO LIST</strong></h1>
         <button id="themeToggle" title="Ganti Tema Gelap/Terang">
@@ -25,12 +24,15 @@
           type="text"
           id="taskInput"
           placeholder="Masukkan tugas baru..."
+          required
         />
         <input type="date" id="dateInput" />
         <button id="addTaskBtn">
           <i class="fas fa-plus"></i> Tambah Tugas
         </button>
       </div>
+
+      <div id="validationError" class="error-message"></div>
 
       <div class="controls-container">
         <div class="task-counter">
