@@ -459,6 +459,7 @@ button {
 }
 
 #modalTitle {
+  color: var(--text-dark);
   font-size: 1.5em;
   font-weight: 900;
   margin: 0;
