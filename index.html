@@ -32,8 +32,6 @@
         </button>
       </div>
 
-      <div id="validationError" class="error-message"></div>
-
       <div class="controls-container">
         <div class="task-counter">
           <span id="pendingCount">0</span> Tugas Belum Selesai (<span
@@ -63,6 +61,21 @@
       </div>
 
       <ul id="taskList"></ul>
+    </div>
+
+    <div id="customModal" class="modal-overlay hidden">
+      <div class="custom-modal">
+        <div class="modal-header">
+          <h3 id="modalTitle"></h3>
+        </div>
+        <div class="modal-body">
+          <p id="modalMessage"></p>
+        </div>
+        <div class="modal-footer">
+          <button id="modalConfirmBtn" class="confirm-btn">Ya, Hapus</button>
+          <button id="modalCloseBtn" class="close-btn">Tutup</button>
+        </div>
+      </div>
     </div>
 
     <script src="script.js"></script>

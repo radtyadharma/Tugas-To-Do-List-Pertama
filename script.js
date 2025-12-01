@@ -6,8 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  document.getElementById("taskInput").addEventListener("input", clearError);
-
   document.querySelectorAll(".filter-btn").forEach((button) => {
     button.addEventListener("click", function () {
       document
@@ -25,16 +23,146 @@ document.addEventListener("DOMContentLoaded", () => {
   updateCounter();
 });
 
-function showError(message) {
-  const errorDiv = document.getElementById("validationError");
-  errorDiv.textContent = message;
-  errorDiv.style.display = "block";
+function showModal(title, message, type, onConfirm) {
+  const modalOverlay = document.getElementById("customModal");
+  const modalBox = modalOverlay.querySelector(".custom-modal");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalBody = modalOverlay.querySelector(".modal-body");
+  const confirmBtn = document.getElementById("modalConfirmBtn");
+  const closeBtn = document.getElementById("modalCloseBtn");
+
+  modalTitle.textContent = title;
+  modalBody.innerHTML = `<p id="modalMessage">${message}</p>`;
+
+  modalBox.classList.remove("modal-alert", "modal-confirm", "modal-edit");
+
+  if (type === "confirm") {
+    modalBox.classList.add("modal-confirm");
+    confirmBtn.style.display = "inline-block";
+    confirmBtn.textContent = "Ya, Hapus";
+    closeBtn.textContent = "Batal";
+
+    confirmBtn.onclick = () => {
+      closeModal();
+      if (onConfirm) onConfirm();
+    };
+    closeBtn.onclick = closeModal;
+  } else {
+    modalBox.classList.add("modal-alert");
+    confirmBtn.style.display = "none";
+    closeBtn.textContent = "Tutup";
+
+    closeBtn.onclick = closeModal;
+  }
+
+  modalOverlay.classList.remove("hidden");
 }
 
-function clearError() {
-  const errorDiv = document.getElementById("validationError");
-  errorDiv.textContent = "";
-  errorDiv.style.display = "none";
+function showEditModal(listItem) {
+  const modalOverlay = document.getElementById("customModal");
+  const modalBox = modalOverlay.querySelector(".custom-modal");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalBody = modalOverlay.querySelector(".modal-body");
+  const confirmBtn = document.getElementById("modalConfirmBtn");
+  const closeBtn = document.getElementById("modalCloseBtn");
+
+  const currentText = listItem.querySelector(".task-text").textContent;
+  const currentDate = listItem.getAttribute("data-date") || "";
+
+  modalTitle.textContent = "Ubah Tugas";
+
+  modalBody.innerHTML = `
+    <div class="edit-form-group">
+        <label for="editTaskText" style="display: block; margin-bottom: 5px; font-weight: bold;">Tugas:</label>
+        <input type="text" id="editTaskText" class="edit-modal-input" value="${currentText}" required>
+    </div>
+    <div class="edit-form-group">
+        <label for="editTaskDate" style="display: block; margin-bottom: 5px; font-weight: bold;">Tanggal Tenggat:</label>
+        <input type="date" id="editTaskDate" class="edit-modal-input" value="${currentDate}">
+    </div>
+  `;
+
+  modalBox.classList.remove("modal-alert", "modal-confirm");
+  modalBox.classList.add("modal-edit");
+
+  confirmBtn.style.display = "inline-block";
+  confirmBtn.textContent = "Simpan Perubahan";
+  closeBtn.textContent = "Batal";
+
+  confirmBtn.onclick = () => {
+    saveEditTask(listItem);
+  };
+  closeBtn.onclick = closeModal;
+
+  document.getElementById("editTaskText").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      saveEditTask(listItem);
+    }
+  });
+
+  modalOverlay.classList.remove("hidden");
+  document.getElementById("editTaskText").focus();
+}
+
+function saveEditTask(listItem) {
+  const newText = document.getElementById("editTaskText").value.trim();
+  const newDate = document.getElementById("editTaskDate").value;
+  const originalText = listItem.querySelector(".task-text").textContent.trim();
+
+  if (newText === "") {
+    closeModal();
+    showModal(
+      "⚠️ Tugas Wajib Diisi",
+      "Deskripsi tugas tidak boleh kosong.",
+      "alert"
+    );
+    return;
+  }
+
+  const isDuplicate = Array.from(
+    document.querySelectorAll(".task-item:not(.instruction)")
+  ).some((item) => {
+    if (item !== listItem) {
+      return (
+        item.querySelector(".task-text").textContent.trim().toLowerCase() ===
+        newText.toLowerCase()
+      );
+    }
+    return false;
+  });
+
+  if (isDuplicate && newText.toLowerCase() !== originalText.toLowerCase()) {
+    closeModal();
+    showModal(
+      "❌ Duplikasi Tugas",
+      "Tugas baru ini sudah ada di daftar Anda. Mohon ganti deskripsi.",
+      "alert"
+    );
+    return;
+  }
+
+  listItem.querySelector(".task-text").textContent = newText;
+
+  const dateDisplay = newDate ? formatDate(newDate) : "Tidak ada tenggat waktu";
+
+  listItem.querySelector(".date-info").textContent = dateDisplay;
+  listItem.setAttribute("data-date", newDate);
+
+  checkExpiry(listItem);
+  saveTasks();
+  filterTasks();
+  closeModal();
+}
+
+function closeModal() {
+  document.getElementById("customModal").classList.add("hidden");
+
+  document.getElementById("modalConfirmBtn").onclick = null;
+  document.getElementById("modalCloseBtn").onclick = null;
+
+  document
+    .getElementById("customModal")
+    .querySelector(".modal-body").innerHTML = '<p id="modalMessage"></p>';
 }
 
 function toggleTheme() {
@@ -185,9 +313,6 @@ function createTaskElement(
             <span class="date-info">${formattedDateDisplay}</span>
         </label>
         
-        <input type="text" class="edit-input edit-text-input" value="${text}" style="display: none;">
-        <input type="date" class="edit-input edit-date-input" value="${dateString}" style="display: none;">
-
         <div class="actions">
             <button class="edit-btn" onclick="editTask(this)" title="Edit Tugas"><i class="fas fa-edit"></i></button>
             <button class="delete-btn" onclick="deleteTask(this)" title="Hapus Tugas"><i class="fas fa-trash"></i></button>
@@ -209,16 +334,22 @@ function addTask() {
   const taskText = taskInput.value.trim();
   const taskDate = dateInput.value;
 
-  clearError();
-
   if (taskText === "") {
-    showError("⚠️ TUGAS WAJIB DI ISI !");
+    showModal(
+      "⚠️ Tugas Wajib Diisi",
+      "Anda harus mengisi deskripsi tugas sebelum menambahkannya.",
+      "alert"
+    );
     taskInput.focus();
     return;
   }
 
   if (isTaskDuplicate(taskText)) {
-    showError("❌ TUGAS INI SUDAH ADA DI DAFTAR ANDA !");
+    showModal(
+      "❌ Duplikasi Tugas",
+      "Tugas ini sudah ada di daftar Anda. Masukkan tugas yang berbeda.",
+      "alert"
+    );
     taskInput.focus();
     return;
   }
@@ -254,77 +385,13 @@ function toggleComplete(checkbox) {
 
 function editTask(editButton) {
   const listItem = editButton.closest(".task-item");
-  const taskTextSpan = listItem.querySelector(".task-text");
-
-  const editText = listItem.querySelector(".edit-input.edit-text-input");
-  const editDate = listItem.querySelector(".edit-input.edit-date-input");
-
-  if (listItem.classList.contains("editing")) {
-    const newText = editText.value.trim();
-    const newDate = editDate.value;
-    const originalText = taskTextSpan.textContent.trim();
-
-    clearError();
-
-    if (newText === "") {
-      showError("⚠️ TUGAS WAJIB DI ISI !");
-      editText.focus();
-      return;
-    }
-
-    if (
-      newText.toLowerCase() !== originalText.toLowerCase() &&
-      isTaskDuplicate(newText)
-    ) {
-      showError("❌ TUGAS BARU INI SUDAH ADA DI DAFTAR ANDA !");
-      editText.focus();
-      return;
-    }
-
-    taskTextSpan.textContent = newText;
-
-    const dateDisplay = newDate
-      ? formatDate(newDate)
-      : "Tidak ada tenggat waktu";
-
-    let dateSpan = listItem.querySelector(".date-info");
-    if (dateSpan) {
-      dateSpan.textContent = dateDisplay;
-    }
-
-    listItem.setAttribute("data-date", newDate);
-
-    listItem.classList.remove("editing");
-    editButton.innerHTML = '<i class="fas fa-edit"></i>';
-    editButton.title = "Edit Tugas";
-    editText.style.display = "none";
-    editDate.style.display = "none";
-
-    checkExpiry(listItem);
-    saveTasks();
-    filterTasks();
-  } else {
-    listItem.classList.add("editing");
-
-    editText.value = taskTextSpan.textContent;
-    editText.style.display = "inline-block";
-
-    editDate.value = listItem.getAttribute("data-date") || "";
-    editDate.style.display = "inline-block";
-
-    editText.setAttribute("required", "required");
-    editDate.removeAttribute("required");
-
-    editButton.innerHTML = '<i class="fas fa-save"></i>';
-    editButton.title = "Simpan Tugas";
-
-    editText.focus();
-  }
+  showEditModal(listItem);
 }
 
 function deleteTask(deleteButton) {
   const listItem = deleteButton.closest(".task-item");
-  if (confirm("❓ Apakah anda yakin menghapus tugas ini?")) {
+
+  const onConfirmDelete = () => {
     listItem.classList.add("fade-out");
 
     setTimeout(() => {
@@ -333,7 +400,14 @@ function deleteTask(deleteButton) {
       updateCounter();
       filterTasks();
     }, 300);
-  }
+  };
+
+  showModal(
+    "❓ Konfirmasi Hapus",
+    "Apakah anda yakin ingin menghapus tugas ini secara permanen?",
+    "confirm",
+    onConfirmDelete
+  );
 }
 
 function saveTasks() {

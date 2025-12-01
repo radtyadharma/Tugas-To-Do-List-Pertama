@@ -21,7 +21,7 @@ body {
   --hover-accent: #6e8641;
   --border-color: #576b33;
   --task-completed: #576b33;
-  --expired-color: #F8D0c8;
+  --expired-color: #ffdbe5;
 }
 
 .dark-mode {
@@ -35,7 +35,7 @@ body {
   --hover-accent: #cdd0c0;
   --border-color: #cdd0c0;
   --task-completed: #49592a;
-  --expired-color: #ea9ab2;
+  --expired-color: #d46085;
 }
 
 .container {
@@ -168,29 +168,11 @@ button {
   background-color: var(--hover-accent);
   filter: brightness(1.1);
   transform: scale(1.05);
-  border-color: var (--text-dark);
+  border-color: var(--text-dark);
 }
 
 #themeToggle i {
   font-size: 1.2em;
-}
-
-.error-message {
-  color: var(--expired-color);
-  font-weight: bold;
-  margin-bottom: 15px;
-  padding: 8px 10px;
-  border-left: 5px solid var(--expired-color);
-  background-color: #cdd0c071;
-  border-radius: 4px;
-  display: none;
-  font-size: 1.05em;
-  animation: fadeIn 0.3s;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 .controls-container {
@@ -300,7 +282,7 @@ button {
   box-shadow: 0 0 8px var(--expired-color);
 }
 .expired .date-info {
-  color: #ffffff;
+  color: var(--text-dark);
   font-weight: bold;
 }
 .expired::before {
@@ -392,24 +374,32 @@ button {
   transform: scale(1.1);
 }
 
-.editing .task-text,
-.editing .date-info {
-  display: none;
+.edit-form-group {
+    margin-bottom: 15px;
 }
-
-.editing .edit-input {
-  display: inline-block !important;
-  width: auto;
-  flex-grow: 1;
-  margin-right: 10px;
-  padding: 5px;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-task-item-light);
-  color: var(--text-dark);
-  border-radius: 4px;
+.edit-modal-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-task-item-light);
+    color: var(--text-dark);
+    box-sizing: border-box;
+    font-size: 1em;
 }
-.edit-input {
-  display: none;
+.edit-modal-input:focus {
+    outline: none;
+    border-color: var(--main-accent);
+    box-shadow: 0 0 5px var(--main-accent);
+}
+.modal-edit .modal-header h3 {
+  color: var(--main-accent);
+}
+.modal-edit .confirm-btn {
+  background-color: var(--main-accent);
+}
+.modal-edit .close-btn {
+  background-color: var(--text-dark);
 }
 
 .instruction {
@@ -425,4 +415,109 @@ button {
 }
 .hidden {
   display: none !important;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: opacity 0.3s ease;
+}
+
+.custom-modal {
+  background-color: var(--bg-task-item-light);
+  color: var(--text-dark);
+  padding: 25px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  transform: scale(0.9);
+  opacity: 0;
+  animation: modalScaleUp 0.3s forwards;
+  border: 2px solid var(--border-color);
+}
+
+@keyframes modalScaleUp {
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  border-bottom: 2px solid var(--expired-color);
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+#modalTitle {
+  font-size: 1.5em;
+  font-weight: 900;
+  margin: 0;
+}
+
+#modalMessage {
+  margin-bottom: 20px;
+  line-height: 1.5;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm-btn {
+  background-color: var(--expired-color);
+  color: var(--text-light);
+  font-weight: bold;
+  min-width: 120px;
+}
+
+.confirm-btn:hover {
+  background-color: #ffdbe5;
+}
+
+.dark-mode .confirm-btn:hover {
+  background-color: #d46085;
+}
+
+.close-btn {
+  background-color: var(--main-accent);
+  color: var(--text-light);
+}
+.close-btn:hover {
+  background-color: var(--hover-accent);
+}
+
+.modal-alert .modal-header h3 {
+  color: var(--expired-color);
+}
+.modal-alert .confirm-btn {
+  display: none;
+}
+.modal-alert .modal-footer {
+  justify-content: center;
+}
+
+.modal-confirm .modal-header h3 {
+  color: var(--main-accent);
+}
+.modal-confirm .close-btn {
+  min-width: 120px;
+  background-color: var(--text-dark);
+  color: var(--text-light);
+}
+.modal-confirm .close-btn:hover {
+  background-color: #6c757d;
 }
